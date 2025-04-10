@@ -1,59 +1,50 @@
-# Animacao3d
+# Animação 3D Interativa com Angular e Three.js
 
-This project was generated using [Angular CLI](https://github.com/angular/angular-cli) version 19.2.7.
+Este projeto é uma aplicação Angular que demonstra uma animação 3D interativa usando Three.js, onde o usuário pode interagir com os objetos na tela usando o cursor do mouse.
 
-## Development server
+## Características
 
-To start a local development server, run:
+- Formas 3D animadas que reagem ao movimento do mouse
+- Cursor personalizado que muda de forma ao interagir com os objetos
+- Efeito de expansão nos objetos ao passar o mouse sobre eles
+- Animações fluidas e responsivas
+- Interface limpa e imersiva
 
-```bash
-ng serve
-```
+## Requisitos
 
-Once the server is running, open your browser and navigate to `http://localhost:4200/`. The application will automatically reload whenever you modify any of the source files.
+- Node.js (v14 ou superior)
+- Angular CLI (v16 ou superior)
+- Navegador moderno com suporte a WebGL
 
-## Code scaffolding
+## Instalação
 
-Angular CLI includes powerful code scaffolding tools. To generate a new component, run:
+1. Clone o repositório ou baixe os arquivos
+2. Navegue até a pasta do projeto
+3. Execute `npm install` para instalar as dependências
+4. Execute `ng serve` para iniciar o servidor de desenvolvimento
+5. Acesse `http://localhost:4200/` no seu navegador
 
-```bash
-ng generate component component-name
-```
+## Tecnologias Utilizadas
 
-For a complete list of available schematics (such as `components`, `directives`, or `pipes`), run:
+- Angular 16+
+- Three.js
+- TypeScript
+- SCSS
 
-```bash
-ng generate --help
-```
+## Como funciona
 
-## Building
+A aplicação utiliza Three.js para criar várias formas geométricas 3D dispostas em um padrão circular. Quando o cursor do mouse se move pela tela, os objetos reagem com efeitos de escala, rotação e deslocamento.
 
-To build the project run:
+O cursor do mouse padrão é substituído por um cursor personalizado que muda de tamanho e cor ao interagir com os objetos ou ao clicar na tela.
 
-```bash
-ng build
-```
+## Personalização
 
-This will compile your project and store the build artifacts in the `dist/` directory. By default, the production build optimizes your application for performance and speed.
+Você pode personalizar a animação 3D modificando os seguintes arquivos:
 
-## Running unit tests
+- `src/app/scene3d/scene3d.component.ts`: Contém a lógica da animação 3D e interação com o mouse
+- `src/app/scene3d/scene3d.component.scss`: Estilos para o contêiner da cena e o cursor personalizado
+- `src/styles.scss`: Estilos globais da aplicação
 
-To execute unit tests with the [Karma](https://karma-runner.github.io) test runner, use the following command:
+## Licença
 
-```bash
-ng test
-```
-
-## Running end-to-end tests
-
-For end-to-end (e2e) testing, run:
-
-```bash
-ng e2e
-```
-
-Angular CLI does not come with an end-to-end testing framework by default. You can choose one that suits your needs.
-
-## Additional Resources
-
-For more information on using the Angular CLI, including detailed command references, visit the [Angular CLI Overview and Command Reference](https://angular.dev/tools/cli) page.
+Este projeto está licenciado sob a Licença MIT.
