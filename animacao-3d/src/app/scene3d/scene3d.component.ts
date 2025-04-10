@@ -1,6 +1,6 @@
-import { Component, ElementRef, OnInit, ViewChild, AfterViewInit, HostListener } from '@angular/core';
+import { Component, ElementRef, OnInit, ViewChild, AfterViewInit, HostListener, PLATFORM_ID, Inject } from '@angular/core';
 import * as THREE from 'three';
-import { CommonModule } from '@angular/common';
+import { CommonModule, isPlatformBrowser } from '@angular/common';
 
 @Component({
   selector: 'app-scene3d',
@@ -23,20 +23,29 @@ export class Scene3dComponent implements OnInit, AfterViewInit {
   private animationId: number = 0;
   private mousePosition = { x: 0, y: 0 };
   private isMouseDown = false;
+  private isBrowser: boolean;
 
-  constructor() { }
+  constructor(@Inject(PLATFORM_ID) private platformId: Object) {
+    this.isBrowser = isPlatformBrowser(this.platformId);
+  }
 
   ngOnInit(): void {
-    this.initScene();
+    if (this.isBrowser) {
+      this.initScene();
+    }
   }
 
   ngAfterViewInit(): void {
-    this.setupRenderer();
-    this.animate();
+    if (this.isBrowser) {
+      this.setupRenderer();
+      this.animate();
+    }
   }
 
   @HostListener('mousemove', ['$event'])
   onMouseMove(event: MouseEvent): void {
+    if (!this.isBrowser) return;
+
     // Atualizar posição do cursor customizado
     this.mousePosition.x = event.clientX;
     this.mousePosition.y = event.clientY;
@@ -49,6 +58,8 @@ export class Scene3dComponent implements OnInit, AfterViewInit {
 
   @HostListener('mousedown')
   onMouseDown(): void {
+    if (!this.isBrowser) return;
+
     this.isMouseDown = true;
     this.customCursor.nativeElement.style.width = '15px';
     this.customCursor.nativeElement.style.height = '15px';
@@ -57,6 +68,8 @@ export class Scene3dComponent implements OnInit, AfterViewInit {
 
   @HostListener('mouseup')
   onMouseUp(): void {
+    if (!this.isBrowser) return;
+
     this.isMouseDown = false;
     this.customCursor.nativeElement.style.width = '20px';
     this.customCursor.nativeElement.style.height = '20px';
@@ -65,7 +78,7 @@ export class Scene3dComponent implements OnInit, AfterViewInit {
 
   @HostListener('window:resize')
   onWindowResize(): void {
-    if (!this.camera || !this.renderer) return;
+    if (!this.isBrowser || !this.camera || !this.renderer) return;
     
     this.camera.aspect = window.innerWidth / window.innerHeight;
     this.camera.updateProjectionMatrix();
@@ -73,6 +86,8 @@ export class Scene3dComponent implements OnInit, AfterViewInit {
   }
 
   private updateCustomCursor(): void {
+    if (!this.isBrowser) return;
+
     if (this.customCursor && this.customCursor.nativeElement) {
       this.customCursor.nativeElement.style.left = `${this.mousePosition.x}px`;
       this.customCursor.nativeElement.style.top = `${this.mousePosition.y}px`;
@@ -80,6 +95,8 @@ export class Scene3dComponent implements OnInit, AfterViewInit {
   }
 
   private initScene(): void {
+    if (!this.isBrowser) return;
+
     // Criar cena
     this.scene = new THREE.Scene();
     this.scene.background = new THREE.Color(0x000000);
@@ -103,6 +120,8 @@ export class Scene3dComponent implements OnInit, AfterViewInit {
   }
 
   private createObjects(): void {
+    if (!this.isBrowser) return;
+
     // Criar várias formas geométricas com cores diferentes
     const geometries = [
       new THREE.BoxGeometry(1, 1, 1),
@@ -141,6 +160,8 @@ export class Scene3dComponent implements OnInit, AfterViewInit {
   }
 
   private setupRenderer(): void {
+    if (!this.isBrowser) return;
+
     // Configurar renderizador
     this.renderer = new THREE.WebGLRenderer({ antialias: true });
     this.renderer.setSize(window.innerWidth, window.innerHeight);
@@ -151,6 +172,8 @@ export class Scene3dComponent implements OnInit, AfterViewInit {
   }
 
   private animate(): void {
+    if (!this.isBrowser) return;
+
     this.animationId = requestAnimationFrame(() => this.animate());
     
     // Atualizar raycaster com posição do mouse
@@ -218,7 +241,11 @@ export class Scene3dComponent implements OnInit, AfterViewInit {
   }
 
   ngOnDestroy(): void {
-    cancelAnimationFrame(this.animationId);
+    if (!this.isBrowser) return;
+
+    if (this.animationId) {
+      cancelAnimationFrame(this.animationId);
+    }
     
     // Limpar memória
     this.meshes.forEach(mesh => {
@@ -234,7 +261,9 @@ export class Scene3dComponent implements OnInit, AfterViewInit {
     
     if (this.renderer) {
       this.renderer.dispose();
-      this.rendererContainer.nativeElement.removeChild(this.renderer.domElement);
+      if (this.rendererContainer && this.rendererContainer.nativeElement) {
+        this.rendererContainer.nativeElement.removeChild(this.renderer.domElement);
+      }
     }
   }
 }
