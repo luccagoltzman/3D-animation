@@ -12,6 +12,26 @@ export const initAudioContext = (): AudioContext => {
   return audioContext;
 };
 
+// Soft sound when opening the canvas/sheet (click on shader)
+export const playCanvasClickSound = () => {
+  if (!audioContext) return;
+  const masterGain = audioContext.createGain();
+  masterGain.connect(audioContext.destination);
+  masterGain.gain.value = 0.08;
+  const osc = audioContext.createOscillator();
+  const gain = audioContext.createGain();
+  osc.type = 'sine';
+  osc.frequency.value = 320;
+  osc.connect(gain);
+  gain.connect(masterGain);
+  const now = audioContext.currentTime;
+  gain.gain.setValueAtTime(0, now);
+  gain.gain.linearRampToValueAtTime(0.25, now + 0.03);
+  gain.gain.exponentialRampToValueAtTime(0.001, now + 0.15);
+  osc.start(now);
+  osc.stop(now + 0.15);
+};
+
 // Play completion sound (when a reminder is marked as done)
 export const playCompletionSound = () => {
   if (!audioContext) return;

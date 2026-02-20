@@ -31,7 +31,9 @@ export const useReminderManager = () => {
     return () => {
       document.removeEventListener('click', initAudio);
       document.removeEventListener('touchstart', initAudio);
-      audioContext?.close();
+      if (audioContext && audioContext.state !== 'closed') {
+        audioContext.close().catch(() => {});
+      }
     };
   }, [audioContext]);
 

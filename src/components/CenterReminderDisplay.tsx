@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, type MouseEvent } from "react";
 import { Reminder } from "./ReminderManager";
 import { motion, AnimatePresence } from "framer-motion";
 
@@ -7,6 +7,7 @@ interface CenterReminderDisplayProps {
   onRemove: (id: string) => void;
   size: number;
   onComplete?: (id: string) => void;
+  onCenterClick?: () => void;
 }
 
 // Format time function
@@ -27,9 +28,10 @@ const truncateText = (text: string, maxLength: number = 60) => {
 
 export const CenterReminderDisplay = ({
   reminders,
-  onRemove,
+  onRemove: _onRemove,
   size,
-  onComplete
+  onComplete,
+  onCenterClick
 }: CenterReminderDisplayProps) => {
   const activeReminders = reminders.filter(r => !r.completed);
   const [currentIndex, setCurrentIndex] = useState(0);
@@ -56,7 +58,7 @@ export const CenterReminderDisplay = ({
     if (activeReminders.length <= 1) return;
     
     const intervalId = setInterval(() => {
-      setCurrentIndex(prev => (prev + 1) % activeReminders.length);
+      setCurrentIndex((prev: number) => (prev + 1) % activeReminders.length);
     }, 5000);
     
     return () => clearInterval(intervalId);
@@ -69,8 +71,7 @@ export const CenterReminderDisplay = ({
     }
   }, [activeReminders.length, currentIndex]);
 
-  // Track mouse position relative to center
-  const handleMouseMove = (event: React.MouseEvent) => {
+  const handleMouseMove = (event: MouseEvent<HTMLDivElement>) => {
     if (containerRef.current) {
       const rect = containerRef.current.getBoundingClientRect();
       const centerX = rect.left + rect.width / 2;
@@ -102,14 +103,12 @@ export const CenterReminderDisplay = ({
   
   return (
     <div 
-      className="absolute left-1/2 top-1/2 transform -translate-x-1/2 -translate-y-1/2 pointer-events-auto z-10"
+      className="absolute left-1/2 top-1/2 transform -translate-x-1/2 -translate-y-1/2 pointer-events-none z-10"
       style={{ 
         width: displaySize,
         height: displaySize
       }}
       ref={containerRef}
-      onMouseMove={handleMouseMove}
-      onMouseLeave={handleMouseLeave}
     >
       <AnimatePresence mode="wait">
         <motion.div
@@ -118,9 +117,12 @@ export const CenterReminderDisplay = ({
           animate={{ opacity: 1, scale: 1 }}
           exit={{ opacity: 0, scale: 0.9 }}
           transition={{ duration: 0.3 }}
-          className="w-full h-full flex flex-col items-center justify-center rounded-full bg-black/30 backdrop-blur-lg p-6 border border-white/10"
+          className="w-full h-full flex flex-col items-center justify-center rounded-full bg-black/30 backdrop-blur-lg p-6 border border-white/10 pointer-events-auto cursor-pointer"
+          onMouseMove={handleMouseMove}
+          onMouseLeave={handleMouseLeave}
           onHoverStart={() => setIsHovering(true)}
           onHoverEnd={() => setIsHovering(false)}
+          onClick={onCenterClick}
         >
           
           {/* Main Content - Centered */}
@@ -159,7 +161,7 @@ export const CenterReminderDisplay = ({
                     
                     <motion.button
                       className="flex items-center justify-center px-8 py-2.5 rounded-full bg-black/80 hover:bg-black transition-all duration-300 border border-white/10 h-auto backdrop-blur-sm"
-                      onClick={() => onComplete(currentReminder.id)}
+                      onClick={(e: MouseEvent<HTMLButtonElement>) => { e.stopPropagation(); onComplete(currentReminder.id); }}
                       initial={{ opacity: 0, y: 5, scale: 0.9 }}
                       animate={{ opacity: 1, y: 0, scale: 1 }}
                       transition={{ delay: 0.1, duration: 0.2 }}
@@ -183,7 +185,7 @@ export const CenterReminderDisplay = ({
                   className={`w-2 h-2 rounded-full transition-colors ${
                     idx === currentIndex ? 'bg-primary' : 'bg-primary/30'
                   }`}
-                  onClick={() => setCurrentIndex(idx)}
+                  onClick={(e: MouseEvent<HTMLButtonElement>) => { e.stopPropagation(); setCurrentIndex(idx); }}
                   whileHover={{ scale: 1.2 }}
                   whileTap={{ scale: 0.9 }}
                   aria-label={`View reminder ${idx + 1}`}

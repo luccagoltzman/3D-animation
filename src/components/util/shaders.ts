@@ -407,6 +407,55 @@ void main() {
 }
 `;
 
+// Shader 5: Plasma (classic effect)
+export const plasmaShader = `
+precision mediump float;
+uniform vec2 iResolution;
+uniform float iTime;
+uniform vec2 iMouse;
+uniform bool hasActiveReminders;
+uniform bool hasUpcomingReminders;
+uniform bool disableCenterDimming;
+varying vec2 vTextureCoord;
+
+void mainImage(out vec4 fragColor, in vec2 fragCoord) {
+  vec2 uv = (fragCoord - iResolution.xy * 0.5) / min(iResolution.x, iResolution.y);
+  float t = iTime * 0.5;
+  float v = sin(uv.x * 4.0 + t) + sin(uv.y * 4.0 + t * 1.3) + sin((uv.x + uv.y) * 2.0 + t * 0.7);
+  v = v * 0.33 + 0.5;
+  vec3 col;
+  if (hasActiveReminders) {
+    col = vec3(0.15, 0.25, 0.7) + vec3(0.3, 0.5, 1.0) * v;
+  } else if (hasUpcomingReminders) {
+    col = vec3(0.15, 0.5, 0.2) + vec3(0.2, 0.9, 0.4) * v;
+  } else {
+    col = vec3(0.2, 0.1, 0.4) + vec3(0.6, 0.3, 0.9) * v;
+  }
+  vec2 center = iResolution.xy * 0.5;
+  float dist = distance(fragCoord, center);
+  float radius = min(iResolution.x, iResolution.y) * 0.5;
+  float centerDim = disableCenterDimming ? 1.0 : smoothstep(radius * 0.3, radius * 0.5, dist);
+  fragColor = vec4(col, 1.0);
+  if (!disableCenterDimming) {
+    fragColor.rgb = mix(fragColor.rgb * 0.3, fragColor.rgb, centerDim);
+  }
+}
+
+void main() {
+  vec2 fragCoord = vTextureCoord * iResolution;
+  vec2 center = iResolution * 0.5;
+  float dist = distance(fragCoord, center);
+  float radius = min(iResolution.x, iResolution.y) * 0.5;
+  if (dist < radius) {
+    vec4 color;
+    mainImage(color, fragCoord);
+    gl_FragColor = color;
+  } else {
+    discard;
+  }
+}
+`;
+
 // Common vertex shader for all shaders
 export const vertexShader = `
 attribute vec4 aVertexPosition;
@@ -443,5 +492,11 @@ export const shaders = [
     name: "Wavy Lines",
     fragmentShader: wavyLinesShader,
     color: "#10b981" // Emerald color
+  },
+  {
+    id: 5,
+    name: "Plasma",
+    fragmentShader: plasmaShader,
+    color: "#f59e0b" // Amber color
   }
 ];

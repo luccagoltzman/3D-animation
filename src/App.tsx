@@ -5,6 +5,7 @@ import { SheetReminderInput } from "./components/SheetReminderInput";
 import { useReminderManager } from "./components/ReminderManager";
 import { CenterReminderDisplay } from "./components/CenterReminderDisplay";
 import { SonnerToastProvider } from "./components/SonnerToastProvider";
+import { playCanvasClickSound, initAudioContext } from "./components/util/sounds";
 import { motion } from "framer-motion";
 import { Button } from "./components/ui/button";
 import "./styles/sonner-fixes.css";
@@ -21,7 +22,9 @@ export default function App() {
   } = useReminderManager();
   const [canvasSize, setCanvasSize] = useState(600);
   const [showInput, setShowInput] = useState(false);
-  const [selectedShader, setSelectedShader] = useState(1); // Default to the first shader
+  const [selectedShader, setSelectedShader] = useState(1);
+  const [mouse, setMouse] = useState({ x: -100, y: -100 });
+  const [isOverCanvas, setIsOverCanvas] = useState(false);
 
   // Set dark mode
   useEffect(() => {
@@ -44,8 +47,9 @@ export default function App() {
     };
   }, []);
 
-  // Toggle sheet visibility when clicking on shader
   const handleCanvasClick = () => {
+    initAudioContext();
+    playCanvasClickSound();
     setShowInput(true);
   };
 
@@ -72,8 +76,26 @@ export default function App() {
   const upcomingRemindersExist = hasUpcomingReminders();
 
   return (
-    <div className="min-h-screen bg-black flex flex-col items-center justify-center p-4 relative">
-      {/* Sonner Toast Provider */}
+    <div
+      className="min-h-screen bg-black flex flex-col items-center justify-center p-4 relative"
+      style={{ cursor: isOverCanvas ? "none" : undefined }}
+      onMouseMove={(e) => setMouse({ x: e.clientX, y: e.clientY })}
+      onMouseLeave={() => setMouse({ x: -100, y: -100 })}
+    >
+      {/* Custom cursor glow - visible when over the shader circle */}
+      <div
+        aria-hidden
+        className="pointer-events-none fixed rounded-full mix-blend-screen transition-opacity duration-200 z-[100]"
+        style={{
+          left: mouse.x,
+          top: mouse.y,
+          width: 56,
+          height: 56,
+          transform: "translate(-50%, -50%)",
+          opacity: isOverCanvas ? 0.7 : 0,
+          boxShadow: "0 0 30px 10px rgba(124, 92, 255, 0.4), 0 0 60px 20px rgba(124, 92, 255, 0.2)",
+        }}
+      />
       <SonnerToastProvider />
 
       {/* Shader Selector - Now positioned fixed on the right */}
@@ -91,19 +113,30 @@ export default function App() {
           transition={{ duration: 0.5 }}
           className="relative"
         >
-          <ShaderCanvas
+          <motion.div
+            key={selectedShader}
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ duration: 0.25 }}
+            className="inline-block"
+            onMouseEnter={() => setIsOverCanvas(true)}
+            onMouseLeave={() => setIsOverCanvas(false)}
+          >
+            <ShaderCanvas
             size={canvasSize}
             onClick={handleCanvasClick}
             hasActiveReminders={activeRemindersExist}
             hasUpcomingReminders={upcomingRemindersExist}
             shaderId={selectedShader}
           />
+          </motion.div>
 
           {/* Center Reminder Display */}
           <CenterReminderDisplay
             reminders={reminders}
             onRemove={removeReminder}
             onComplete={markReminderComplete}
+            onCenterClick={handleCanvasClick}
             size={canvasSize}
           />
         </motion.div>
