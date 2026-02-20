@@ -56,6 +56,6 @@
       "scripts": {
           "start": "vite",
           "dev": "vite",
-          "build": "vite build"
+          "build": "npx vite build"
       }
   }
